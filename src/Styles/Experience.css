@@ -1,0 +1,28 @@
+.experience-section {
+    margin-bottom: 20px;
+  }
+  
+  .experience-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .experience-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .year {
+    font-weight: bold;
+    color: #444;
+  }
+  
+  .company {
+    color: #555;
+  }
+  
+  .role {
+    font-style: italic;
+    color: #777;
+  }
+  

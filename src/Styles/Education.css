@@ -1,0 +1,28 @@
+.education-section {
+    margin-bottom: 20px;
+  }
+  
+  .education-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .education-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .year {
+    font-weight: bold;
+    color: #444;
+  }
+  
+  .degree {
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .institution {
+    color: #777;
+  }
+  
