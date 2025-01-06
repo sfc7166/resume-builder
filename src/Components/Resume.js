@@ -1,41 +1,60 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import { jsPDF } from "jspdf";
 
+const initialState = {
+    experience: [],
+    education: [],
+    skills: [],
+};
+
+const reducer = (state, action) => {
+    switch (action.type) {
+        case "ADD_ITEM":
+            return {
+                ...state,
+                [action.payload.type]: [
+                    ...state[action.payload.type],
+                    action.payload.item,
+                ],
+            };
+        case "DELETE_ITEM":
+            return {
+                ...state,
+                [action.payload.type]: state[action.payload.type].filter(
+                    (_, index) => index !== action.payload.index
+                ),
+            };
+        case "UPDATE_ITEM":
+            const updatedItems = [...state[action.payload.type]];
+            updatedItems[action.payload.index] = action.payload.item;
+            return {
+                ...state,
+                [action.payload.type]: updatedItems,
+            };
+        default:
+            return state;
+    }
+};
+
 function Resume() {
-    const [experience, setExperience] = useState([]);
-    const [education, setEducation] = useState([]);
-    const [skills, setSkills] = useState([]);
+    const [state, dispatch] = useReducer(reducer, initialState);
     const [editItem, setEditItem] = useState(null);
+    const [input, setInput] = useState("");
 
-    const handleAddItem = (type, item) => {
-        if (type === "experience") setExperience([...experience, item]);
-        else if (type === "education") setEducation([...education, item]);
-        else if (type === "skills") setSkills([...skills, item]);
+    const handleEdit = (type, index) => {
+        setEditItem({ type, index });
+        setInput(state[type][index]);
     };
 
-    const handleDeleteItem = (type, index) => {
-        if (type === "experience")
-            setExperience(experience.filter((_, i) => i !== index));
-        else if (type === "education")
-            setEducation(education.filter((_, i) => i !== index));
-        else if (type === "skills") setSkills(skills.filter((_, i) => i !== index));
-    };
-
-    const handleUpdateItem = (type, index, updatedItem) => {
-        if (type === "experience") {
-            const updatedExperience = [...experience];
-            updatedExperience[index] = updatedItem;
-            setExperience(updatedExperience);
-        } else if (type === "education") {
-            const updatedEducation = [...education];
-            updatedEducation[index] = updatedItem;
-            setEducation(updatedEducation);
-        } else if (type === "skills") {
-            const updatedSkills = [...skills];
-            updatedSkills[index] = updatedItem;
-            setSkills(updatedSkills);
+    const handleUpdate = () => {
+        if (input.trim()) {
+            dispatch({
+                type: "UPDATE_ITEM",
+                payload: { type: editItem.type, index: editItem.index, item: input },
+            });
+            setEditItem(null);
+            setInput("");
         }
-        setEditItem(null);
     };
 
     const handlePrint = () => {
@@ -54,99 +73,71 @@ function Resume() {
             </button>
             <h1>Resume</h1>
 
-            <div className="resume-section">
-                <h2>Experience</h2>
-                <ListManager
-                    items={experience}
-                    onAdd={(item) => handleAddItem("experience", item)}
-                    onDelete={(index) => handleDeleteItem("experience", index)}
-                    onEdit={(index) => setEditItem({ type: "experience", index })}
-                    editItem={editItem}
-                    onUpdate={(item) => handleUpdateItem("experience", editItem.index, item)}
-                />
-            </div>
-
-            <div className="resume-section">
-                <h2>Education</h2>
-                <ListManager
-                    items={education}
-                    onAdd={(item) => handleAddItem("education", item)}
-                    onDelete={(index) => handleDeleteItem("education", index)}
-                    onEdit={(index) => setEditItem({ type: "education", index })}
-                    editItem={editItem}
-                    onUpdate={(item) => handleUpdateItem("education", editItem.index, item)}
-                />
-            </div>
-
-            <div className="resume-section">
-                <h2>Skills</h2>
-                <ListManager
-                    items={skills}
-                    onAdd={(item) => handleAddItem("skills", item)}
-                    onDelete={(index) => handleDeleteItem("skills", index)}
-                    onEdit={(index) => setEditItem({ type: "skills", index })}
-                    editItem={editItem}
-                    onUpdate={(item) => handleUpdateItem("skills", editItem.index, item)}
-                />
-            </div>
+            {["experience", "education", "skills"].map((type) => (
+                <div key={type} className="resume-section">
+                    <h2>{type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+                    <ul>
+                        {state[type].map((item, index) => (
+                            <li key={index}>
+                                {item}
+                                <button onClick={() => handleEdit(type, index)}>Edit</button>
+                                <button
+                                    onClick={() =>
+                                        dispatch({
+                                            type: "DELETE_ITEM",
+                                            payload: { type, index },
+                                        })
+                                    }
+                                >
+                                    Delete
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                    {editItem && editItem.type === type ? (
+                        <>
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="Edit item"
+                            />
+                            <button onClick={handleUpdate}>Update</button>
+                        </>
+                    ) : (
+                        <>
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder={`Add ${type}`}
+                            />
+                            <button
+                                onClick={() => {
+                                    if (input.trim()) {
+                                        dispatch({
+                                            type: "ADD_ITEM",
+                                            payload: { type, item: input },
+                                        });
+                                        setInput("");
+                                    }
+                                }}
+                            >
+                                Add
+                            </button>
+                        </>
+                    )}
+                </div>
+            ))}
         </div>
     );
 }
 
-function ListManager({ items, onAdd, onDelete, onEdit, editItem, onUpdate }) {
-    const [input, setInput] = useState("");
-
-    const handleAdd = () => {
-        if (input.trim() !== "") {
-            onAdd(input);
-            setInput("");
-        }
-    };
-
-    const handleUpdate = () => {
-        if (input.trim() !== "") {
-            onUpdate(input);
-            setInput("");
-        }
-    };
-
-    return (
-        <div>
-            <ul>
-                {items.map((item, index) => (
-                    <li key={index}>
-                        {item}
-                        <button onClick={() => onEdit(index)}>Edit</button>
-                        <button onClick={() => onDelete(index)}>Delete</button>
-                    </li>
-                ))}
-            </ul>
-            {editItem ? (
-                <>
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Edit item"
-                    />
-                    <button onClick={handleUpdate}>Update</button>
-                </>
-            ) : (
-                <>
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Add item"
-                    />
-                    <button onClick={handleAdd}>Add</button>
-                </>
-            )}
-        </div>
-    )
-}
-
 export default Resume
+
+
+
+
 
 
 

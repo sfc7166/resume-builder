@@ -1,14 +1,23 @@
-import { useState } from "react";
+import { useReducer } from "react";
 import Resume from "./Components/Resume";
 import "./Styles/lightTheme.css";
 import "./Styles/darkTheme.css";
 import "./Styles/global.css";
 
+const themeReducer = (state, action) => {
+  switch (action.type) {
+    case "TOGGLE_THEME":
+      return state === "light" ? "dark" : "light";
+    default:
+      return state;
+  }
+};
+
 function App() {
-  const [theme, setTheme] = useState("light");
+  const [theme, dispatch] = useReducer(themeReducer, "light");
 
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+    dispatch({ type: "TOGGLE_THEME" });
   };
 
   return (
@@ -18,10 +27,11 @@ function App() {
       </button>
       <Resume />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
+
 
 
 

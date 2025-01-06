@@ -1,65 +1,39 @@
-import { useState } from 'react'
+import { useState } from "react";
 
 function ResumeEditor({ onAdd }) {
-    const [experience, setExperience] = useState('');
-    const [education, setEducation] = useState('');
-    const [skill, setSkill] = useState('');
+    const [inputValues, setInputValues] = useState({
+        experience: "",
+        education: "",
+        skills: "",
+    });
 
-    const handleAddExperience = () => {
-        if (experience.trim()) {
-            onAdd('experience', experience);
-            setExperience('');
-        }
+    const handleChange = (type, value) => {
+        setInputValues((prev) => ({ ...prev, [type]: value }));
     };
 
-    const handleAddEducation = () => {
-        if (education.trim()) {
-            onAdd('education', education);
-            setEducation('');
-        }
-    };
-
-    const handleAddSkill = () => {
-        if (skill.trim()) {
-            onAdd('skills', skill);
-            setSkill('');
+    const handleAdd = (type) => {
+        if (inputValues[type].trim()) {
+            onAdd(type, inputValues[type]);
+            setInputValues((prev) => ({ ...prev, [type]: "" }));
         }
     };
 
     return (
         <div className="resume-editor">
             <h2>Edit Resume</h2>
-            <div className="form-section">
-                <label>Experience:</label>
-                <input
-                    type="text"
-                    value={experience}
-                    onChange={(e) => setExperience(e.target.value)}
-                />
-                <button onClick={handleAddExperience}>Add</button>
-            </div>
-
-            <div className="form-section">
-                <label>Education:</label>
-                <input
-                    type="text"
-                    value={education}
-                    onChange={(e) => setEducation(e.target.value)}
-                />
-                <button onClick={handleAddEducation}>Add</button>
-            </div>
-
-            <div className="form-section">
-                <label>Skills:</label>
-                <input
-                    type="text"
-                    value={skill}
-                    onChange={(e) => setSkill(e.target.value)}
-                />
-                <button onClick={handleAddSkill}>Add</button>
-            </div>
+            {["experience", "education", "skills"].map((type) => (
+                <div key={type} className="form-section">
+                    <label>{type.charAt(0).toUpperCase() + type.slice(1)}:</label>
+                    <input
+                        type="text"
+                        value={inputValues[type]}
+                        onChange={(e) => handleChange(type, e.target.value)}
+                    />
+                    <button onClick={() => handleAdd(type)}>Add</button>
+                </div>
+            ))}
         </div>
-    )
+    );
 }
 
-export default ResumeEditor
+export default ResumeEditor;
